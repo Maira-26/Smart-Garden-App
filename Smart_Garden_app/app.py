@@ -4,12 +4,14 @@ A comprehensive plant care app with AI-powered features
 """
 import streamlit as st
 import os
+import sys
 from datetime import datetime, timedelta
 from PIL import Image
 import config
 import io
 import tempfile
 
+sys.path.insert(0, os.path.dirname(__file__))
 # Import our custom modules
 from config import DEFAULT_CITY, DEFAULT_COUNTRY, load_api_keys
 from utils.weather_service import WeatherService
