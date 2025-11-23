@@ -19,7 +19,7 @@ if current_dir not in sys.path:
 
 
 # Import our custom modules
-from config import DEFAULT_CITY, DEFAULT_COUNTRY, load_api_keys
+from config import DEFAULT_CITY, DEFAULT_COUNTRY, DEFAULT_COUNTRY_CODE, load_api_keys, get_country_code
 from utils.weather_service import WeatherService
 from utils.plant_service import PlantService
 from utils.gemini_service import GeminiService
@@ -488,10 +488,13 @@ def get_current_location():
             
             # Validate we got actual data
             if city and country_name:
+                # Ensure country_code is set (convert if needed)
+                if not country_code:
+                    country_code = get_country_code(country_name)
                 return {
                     "city": city,
                     "country": country_name,
-                    "country_code": country_code,
+                    "country_code": country_code or get_country_code(country_name),
                     "lat": data.get('latitude'),
                     "lon": data.get('longitude'),
                     "region": data.get('region', '')
@@ -511,10 +514,11 @@ def get_current_location():
                 
                 # Validate we got actual data
                 if city and country:
+                    country_code = data.get('countryCode', '') or get_country_code(country)
                     return {
                         "city": city,
                         "country": country,
-                        "country_code": data.get('countryCode', ''),
+                        "country_code": country_code,
                         "lat": data.get('lat'),
                         "lon": data.get('lon'),
                         "region": data.get('regionName', '')
@@ -648,11 +652,16 @@ if 'current_page' not in st.session_state:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = data_manager.get_chat_history(20)
 if 'user_location' not in st.session_state:
-    # Auto-detect location on first load
-    st.session_state.user_location = get_current_location()
-    # If detection failed, use defaults
-    if not st.session_state.user_location.get('city') or st.session_state.user_location.get('city') == DEFAULT_CITY:
-        st.session_state.user_location = {"city": DEFAULT_CITY, "country": DEFAULT_COUNTRY, "lat": None, "lon": None, "country_code": "PK"}
+    # On Streamlit Cloud, IP-based detection will show server location (US)
+    # So we default to user's location instead of auto-detecting
+    # User can manually set their location in "Location & Nurseries" page
+    st.session_state.user_location = {
+        "city": DEFAULT_CITY, 
+        "country": DEFAULT_COUNTRY, 
+        "lat": None, 
+        "lon": None, 
+        "country_code": DEFAULT_COUNTRY_CODE
+    }
 if 'use_auto_location' not in st.session_state:
     st.session_state.use_auto_location = False
 if 'location_detected' not in st.session_state:
@@ -1025,13 +1034,16 @@ elif page == "📍 Location & Nurseries":
         manual_country = st.text_input("Country", value=st.session_state.user_location.get('country', DEFAULT_COUNTRY))
         
         if st.button("💾 Save Location", use_container_width=True):
+            # Convert country name to code for API calls
+            country_code = get_country_code(manual_country)
             st.session_state.user_location = {
                 "city": manual_city,
                 "country": manual_country,
+                "country_code": country_code,
                 "lat": st.session_state.user_location.get('lat'),
                 "lon": st.session_state.user_location.get('lon')
             }
-            st.success(f"✅ Location saved: {manual_city}, {manual_country}")
+            st.success(f"✅ Location saved: {manual_city}, {manual_country} ({country_code})")
     
     # Display current location
     current_loc = st.session_state.user_location
@@ -1168,12 +1180,14 @@ elif page == "📊 Garden Dashboard":
     # Get Current Weather - Use user location if available
     user_city = st.session_state.user_location.get('city', DEFAULT_CITY)
     user_country = st.session_state.user_location.get('country', DEFAULT_COUNTRY)
+    # Get country code from user location or convert country name to code
+    user_country_code = st.session_state.user_location.get('country_code') or get_country_code(user_country)
     
     with st.spinner("Loading weather data..."):
-        current_weather = weather_service.get_current_weather(user_city, user_country)
-        forecast = weather_service.get_forecast(user_city, user_country, days=2)
-        rain_alert = weather_service.check_rain_alert(user_city, user_country, hours_ahead=24)
-        storm_alert = weather_service.check_storm_alert(user_city, user_country, hours_ahead=24)
+        current_weather = weather_service.get_current_weather(user_city, user_country_code)
+        forecast = weather_service.get_forecast(user_city, user_country_code, days=2)
+        rain_alert = weather_service.check_rain_alert(user_city, user_country_code, hours_ahead=24)
+        storm_alert = weather_service.check_storm_alert(user_city, user_country_code, hours_ahead=24)
     
     # Weather Banner with Animated Sun/Moon
     col1, col2, col3 = st.columns([2.5, 1, 1])
@@ -1769,7 +1783,8 @@ elif page == "🤖 AI Botanist":
                 # Get current weather for context - use detected location
                 user_city = st.session_state.user_location.get('city', DEFAULT_CITY)
                 user_country = st.session_state.user_location.get('country', DEFAULT_COUNTRY)
-                current_weather = weather_service.get_current_weather(user_city, user_country)
+                user_country_code = st.session_state.user_location.get('country_code') or get_country_code(user_country)
+                current_weather = weather_service.get_current_weather(user_city, user_country_code)
                 weather_context = f"Current weather in {user_city}, {user_country}: {current_weather.get('temperature', 25)}°C, {current_weather.get('description', 'clear')}"
                 
                 full_context = f"{weather_context}. {plants_context}{selected_plant_context}" if plants_context else f"{weather_context}{selected_plant_context}"

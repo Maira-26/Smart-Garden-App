@@ -12,45 +12,172 @@ load_dotenv()
 DEFAULT_LOCATION = os.getenv("DEFAULT_LOCATION", "Sialkot,PK")
 DEFAULT_CITY = "Sialkot"
 DEFAULT_COUNTRY = "Pakistan"
+DEFAULT_COUNTRY_CODE = "PK"
+
+# Country name to code mapping (common countries)
+COUNTRY_CODE_MAP = {
+    "pakistan": "PK", "pk": "PK",
+    "united states": "US", "usa": "US", "us": "US",
+    "united kingdom": "GB", "uk": "GB", "britain": "GB",
+    "india": "IN", "in": "IN",
+    "canada": "CA", "ca": "CA",
+    "australia": "AU", "au": "AU",
+    "germany": "DE", "de": "DE",
+    "france": "FR", "fr": "FR",
+    "spain": "ES", "es": "ES",
+    "italy": "IT", "it": "IT",
+    "china": "CN", "cn": "CN",
+    "japan": "JP", "jp": "JP",
+    "south korea": "KR", "kr": "KR",
+    "brazil": "BR", "br": "BR",
+    "mexico": "MX", "mx": "MX",
+    "russia": "RU", "ru": "RU",
+    "turkey": "TR", "tr": "TR",
+    "saudi arabia": "SA", "sa": "SA",
+    "uae": "AE", "united arab emirates": "AE", "ae": "AE",
+    "bangladesh": "BD", "bd": "BD",
+    "sri lanka": "LK", "lk": "LK",
+    "nepal": "NP", "np": "NP",
+    "afghanistan": "AF", "af": "AF",
+    "iran": "IR", "ir": "IR",
+    "iraq": "IQ", "iq": "IQ",
+}
+
+def get_country_code(country_name_or_code):
+    """
+    Convert country name to ISO country code
+    Returns 2-letter country code (e.g., "PK", "US")
+    """
+    if not country_name_or_code:
+        return DEFAULT_COUNTRY_CODE
+    
+    # If already a 2-letter code, return as-is
+    country_str = str(country_name_or_code).strip()
+    if len(country_str) == 2 and country_str.isalpha():
+        return country_str.upper()
+    
+    # Try to find in mapping (case-insensitive)
+    country_lower = country_str.lower()
+    if country_lower in COUNTRY_CODE_MAP:
+        return COUNTRY_CODE_MAP[country_lower]
+    
+    # If not found, return default
+    print(f"⚠️ Country code not found for '{country_name_or_code}', using default: {DEFAULT_COUNTRY_CODE}")
+    return DEFAULT_COUNTRY_CODE
+
+def get_secret_value(st_secrets, key_variations):
+    """
+    Try to get a secret value using multiple key name variations and formats
+    Supports both direct and nested formats in Streamlit secrets
+    """
+    # Try direct format first (most common on Streamlit Cloud)
+    for key in key_variations:
+        try:
+            if key in st_secrets:
+                value = st_secrets[key]
+                if value and str(value).strip():
+                    return str(value).strip()
+        except (KeyError, AttributeError, TypeError):
+            continue
+    
+    # Try nested format: st.secrets["api"]["key"]
+    try:
+        if "api" in st_secrets:
+            api_secrets = st_secrets["api"]
+            for key in key_variations:
+                # Try exact key
+                if key in api_secrets:
+                    value = api_secrets[key]
+                    if value and str(value).strip():
+                        return str(value).strip()
+                # Try lowercase key
+                key_lower = key.lower()
+                if key_lower in api_secrets:
+                    value = api_secrets[key_lower]
+                    if value and str(value).strip():
+                        return str(value).strip()
+                # Try without _API_KEY suffix
+                key_short = key.replace("_API_KEY", "").replace("_KEY", "").lower()
+                if key_short in api_secrets:
+                    value = api_secrets[key_short]
+                    if value and str(value).strip():
+                        return str(value).strip()
+    except (KeyError, AttributeError, TypeError):
+        pass
+    
+    return None
 
 def load_api_keys():
     """
     Load API keys from Streamlit secrets and set them as environment variables
     This ensures all services can access them via os.getenv()
     Call this function after Streamlit is initialized (in app.py)
+    Supports multiple secret formats:
+    - Direct: st.secrets["GROQ_API_KEY"]
+    - Nested: st.secrets["api"]["groq_key"]
     """
     try:
         import streamlit as st
         
         # Load keys from Streamlit secrets and set as environment variables
-        if hasattr(st, 'secrets'):
-            # OpenWeather API
-            if "OPENWEATHER_API_KEY" in st.secrets:
-                os.environ["OPENWEATHER_API_KEY"] = st.secrets["OPENWEATHER_API_KEY"]
+        if hasattr(st, 'secrets') and st.secrets:
+            keys_loaded = 0
+            
+            # OpenWeather API - try multiple key name variations
+            openweather_key = get_secret_value(st.secrets, [
+                "OPENWEATHER_API_KEY", "openweather_api_key", "OPENWEATHER_KEY", 
+                "openweather_key", "OPENWEATHER", "openweather"
+            ])
+            if openweather_key:
+                os.environ["OPENWEATHER_API_KEY"] = openweather_key
+                keys_loaded += 1
             
             # Gemini API
-            if "GEMINI_API_KEY" in st.secrets:
-                os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+            gemini_key = get_secret_value(st.secrets, [
+                "GEMINI_API_KEY", "gemini_api_key", "GEMINI_KEY", 
+                "gemini_key", "GEMINI", "gemini"
+            ])
+            if gemini_key:
+                os.environ["GEMINI_API_KEY"] = gemini_key
+                keys_loaded += 1
             
-            # Groq API
-            if "GROQ_API_KEY" in st.secrets:
-                os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+            # Groq API - try multiple key name variations
+            groq_key = get_secret_value(st.secrets, [
+                "GROQ_API_KEY", "groq_api_key", "GROQ_KEY", 
+                "groq_key", "GROQ", "groq"
+            ])
+            if groq_key:
+                os.environ["GROQ_API_KEY"] = groq_key
+                keys_loaded += 1
             
             # Hugging Face API
-            if "HUGGINGFACE_API_KEY" in st.secrets:
-                os.environ["HUGGINGFACE_API_KEY"] = st.secrets["HUGGINGFACE_API_KEY"]
+            huggingface_key = get_secret_value(st.secrets, [
+                "HUGGINGFACE_API_KEY", "huggingface_api_key", "HUGGINGFACE_KEY",
+                "huggingface_key", "HUGGINGFACE", "huggingface"
+            ])
+            if huggingface_key:
+                os.environ["HUGGINGFACE_API_KEY"] = huggingface_key
+                keys_loaded += 1
             
-            # Perenual API (if you use it)
-            if "PERENUAL_API_KEY" in st.secrets:
-                os.environ["PERENUAL_API_KEY"] = st.secrets["PERENUAL_API_KEY"]
+            # Perenual API
+            perenual_key = get_secret_value(st.secrets, [
+                "PERENUAL_API_KEY", "perenual_api_key", "PERENUAL_KEY",
+                "perenual_key", "PERENUAL", "perenual"
+            ])
+            if perenual_key:
+                os.environ["PERENUAL_API_KEY"] = perenual_key
+                keys_loaded += 1
             
-            print("✅ API keys loaded from Streamlit secrets")
-            return True
+            if keys_loaded > 0:
+                print(f"✅ Loaded {keys_loaded} API key(s) from Streamlit secrets")
+                return True
     except Exception as e:
         print(f"⚠️ Could not load from Streamlit secrets: {e}")
+        import traceback
+        traceback.print_exc()
     
     # Fallback: keys might already be in environment from .env file
-    if os.getenv("OPENWEATHER_API_KEY"):
+    if os.getenv("OPENWEATHER_API_KEY") or os.getenv("GROQ_API_KEY"):
         print("✅ Using API keys from environment variables (.env file)")
         return True
     

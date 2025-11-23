@@ -4,5 +4,11 @@
     "user_message": "which weather is favourable for rose plant",
     "bot_response": "For rose plants, a favourable weather condition is:\n\n* Temperature: 15\u00b0C to 25\u00b0C (59\u00b0F to 77\u00b0F)\n* Sunshine: Full sun to partial shade (at least 6 hours of direct sunlight)\n* Humidity: Moderate (around 40-60%)\n\nIn your current weather in Sialkot, PK (23\u00b0C, haze), the temperature is suitable for rose plants. However, the haze might reduce sunlight intensity, which could impact plant growth. Ensure your rose plant receives some direct sunlight and maintain adequate watering to compensate for the hazy conditions.",
     "plant_context": ""
+  },
+  {
+    "timestamp": "2025-11-23T17:04:03.607384",
+    "user_message": "why leaves turn yellow?",
+    "bot_response": "Leaves can turn yellow due to several reasons. Given the current weather in Sialkot (20\u00b0C, smoke), here are a few possible causes:\n\n1. **Air pollution**: Smoke can damage leaf tissues, leading to yellowing.\n2. **Nitrogen deficiency**: A common issue in plants, especially in areas with poor air quality.\n3. **Overwatering or underwatering**: Inconsistent watering can stress plants, causing yellow leaves.\n4. **Temperature fluctuations**: Although 20\u00b0C is a relatively mild temperature, sudden changes can still affect plants.\n\nTo address the issue, I recommend checking your plant's watering schedule, fertilizing with a balanced fertilizer, and ensuring good air circulation. If the problem persists, please provide more details about your plant, and I'll do my best to help.",
+    "plant_context": ""
   }
 ]
