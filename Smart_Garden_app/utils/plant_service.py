@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 class PlantService:
     def __init__(self):
         # Access API key dynamically from config module (supports secrets.toml)
-        self.api_key = config.PERENUAL_API_KEY
+        self.api_key = config.get_perenual_key()
         self.base_url = config.PERENUAL_BASE_URL
         
     def search_plant(self, query):

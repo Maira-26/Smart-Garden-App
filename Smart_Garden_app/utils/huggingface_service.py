@@ -13,7 +13,7 @@ from datetime import datetime
 class HuggingFaceService:
     def __init__(self):
         # Access API key dynamically from config module (supports secrets.toml)
-        self.api_key = config.HUGGINGFACE_API_KEY
+        self.api_key = config.get_huggingface_key()
         # Use BLIP2 for better vision-language understanding
         # Falls back to BLIP if BLIP2 is not available
         # Use Visual Question Answering model for better plant identification
