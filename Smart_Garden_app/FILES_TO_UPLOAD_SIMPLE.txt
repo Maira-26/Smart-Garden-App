@@ -1,0 +1,33 @@
+Files to Upload to GitHub:
+
+CORE FILES:
+- app.py
+- config.py
+- requirements.txt
+- .gitignore
+- README.md
+- ENV_TEMPLATE.txt
+
+UTILS FOLDER:
+- utils/__init__.py
+- utils/data_manager.py
+- utils/gemini_service.py
+- utils/groq_service.py
+- utils/huggingface_service.py
+- utils/plant_service.py
+- utils/weather_service.py
+
+OPTIONAL DOCUMENTATION (helpful but not required):
+- STREAMLIT_CLOUD_SETUP.md
+- DEPLOYMENT_FIXES_SUMMARY.md
+- SETUP_GUIDE.md
+- PROJECT_SUMMARY.md
+
+DO NOT UPLOAD:
+- .env (contains API keys)
+- __pycache__/ (compiled Python)
+- data/user_profile.json (user data)
+- plants_database.json (user data)
+- chat_history.json (user data)
+- plant_images/ (user images)
+

@@ -1,0 +1,84 @@
+═══════════════════════════════════════════════════════════════
+  FILES TO UPLOAD TO GITHUB - QUICK CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+✅ UPLOAD THESE FILES:
+───────────────────────────────────────────────────────────────
+
+CORE FILES:
+  ✅ app.py
+  ✅ config.py
+  ✅ requirements.txt
+  ✅ .gitignore
+
+UTILS FOLDER (All files):
+  ✅ utils/__init__.py
+  ✅ utils/data_manager.py
+  ✅ utils/weather_service.py
+  ✅ utils/plant_service.py
+  ✅ utils/gemini_service.py
+  ✅ utils/groq_service.py
+  ✅ utils/huggingface_service.py
+
+DOCUMENTATION:
+  ✅ README.md
+  ✅ SETUP_GUIDE.md
+  ✅ PROJECT_SUMMARY.md
+  ✅ GITHUB_SETUP.md
+  ✅ GITHUB_UPLOAD_GUIDE.md
+  ✅ API_KEYS_SECURITY_COMPLETE.md
+  ✅ SECURITY_CHECK.md
+  ✅ CREATE_ENV_FILE.md
+  ✅ QUICK_FIX.md
+  ✅ FILES_TO_UPLOAD.md
+  ✅ UPLOAD_CHECKLIST.txt (this file)
+
+TEMPLATE:
+  ✅ ENV_TEMPLATE.txt
+
+───────────────────────────────────────────────────────────────
+
+❌ DO NOT UPLOAD (Already in .gitignore):
+───────────────────────────────────────────────────────────────
+
+  ❌ .env                    ← Your API keys (NEVER upload!)
+  ❌ __pycache__/           ← Python cache
+  ❌ utils/__pycache__/     ← Python cache
+  ❌ data/user_profile.json ← User data
+  ❌ plants_database.json    ← Plant data
+  ❌ chat_history.json       ← Chat history
+  ❌ plant_images/           ← User images
+
+───────────────────────────────────────────────────────────────
+
+QUICK UPLOAD COMMANDS:
+───────────────────────────────────────────────────────────────
+
+1. Remove __pycache__ from git (if tracked):
+   git rm -r --cached __pycache__
+   git rm -r --cached utils/__pycache__
+
+2. Add all files (gitignore will auto-exclude sensitive files):
+   git add .
+
+3. Check what will be uploaded:
+   git status
+
+4. Commit:
+   git commit -m "Initial commit: Smart Garden App"
+
+5. Push to GitHub:
+   git push -u origin main
+
+───────────────────────────────────────────────────────────────
+
+⚠️  IMPORTANT:
+───────────────────────────────────────────────────────────────
+
+  • Create .env file locally (copy from ENV_TEMPLATE.txt)
+  • Add your API keys to .env file
+  • .env is already in .gitignore - won't be uploaded
+  • Verify git status doesn't show .env or __pycache__
+
+═══════════════════════════════════════════════════════════════
+
