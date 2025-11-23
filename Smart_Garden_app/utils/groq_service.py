@@ -8,27 +8,84 @@ import config
 
 class GroqService:
     def __init__(self):
+        self.client = None
+        self.model = None
+        self._initialize_client()
+    
+    def _initialize_client(self):
+        """Initialize or re-initialize the Groq client with current API key"""
         # Access API key dynamically from config module (supports secrets.toml)
         self.api_key = config.get_groq_key()
+        
         if self.api_key:
             try:
                 self.client = Groq(api_key=self.api_key)
                 self.model = "llama-3.3-70b-versatile"  # Latest Groq model - fast and smart
+                print(f"✅ Groq client initialized successfully")
             except Exception as e:
-                print(f"Groq initialization error: {e}")
+                print(f"❌ Groq initialization error: {e}")
                 self.client = None
                 self.model = None
         else:
+            print("⚠️ Groq API key not found. Checking environment...")
+            # Debug: Print what we're checking
+            import os
+            env_key = os.getenv("GROQ_API_KEY")
+            if env_key:
+                print(f"⚠️ Found GROQ_API_KEY in environment but it's empty or invalid")
+            else:
+                print(f"⚠️ GROQ_API_KEY not found in environment variables")
             self.client = None
             self.model = None
+    
+    def _ensure_client(self):
+        """Ensure client is initialized, try to re-initialize if needed"""
+        if not self.client:
+            # Try to re-initialize in case secrets were loaded after service creation
+            self._initialize_client()
+        return self.client is not None
     
     def chat_about_plant(self, user_message, plant_context=""):
         """
         Chat with AI botanist using Groq (ultra-fast)
         Returns: AI response
         """
-        if not self.client:
-            return "🌱 I'm here to help with your plant care questions! However, the Groq API key is not configured. Please set your GROQ_API_KEY in Streamlit Cloud secrets (Settings → Secrets) to enable AI chat responses."
+        # Try to ensure client is initialized (in case secrets were loaded after service creation)
+        if not self._ensure_client():
+            # Provide helpful debugging info
+            import os
+            import streamlit as st
+            debug_info = []
+            
+            # Check environment
+            env_key = os.getenv("GROQ_API_KEY")
+            if env_key:
+                debug_info.append(f"Found key in environment (length: {len(env_key)})")
+            else:
+                debug_info.append("Key not in environment")
+            
+            # Check secrets
+            try:
+                if hasattr(st, 'secrets') and st.secrets:
+                    if "GROQ_API_KEY" in st.secrets:
+                        debug_info.append("Found GROQ_API_KEY in st.secrets")
+                    elif "api" in st.secrets and "groq_key" in st.secrets.get("api", {}):
+                        debug_info.append("Found groq_key in st.secrets['api']")
+                    else:
+                        debug_info.append("GROQ_API_KEY not found in st.secrets")
+                else:
+                    debug_info.append("st.secrets not available")
+            except:
+                debug_info.append("Could not check st.secrets")
+            
+            error_msg = "🌱 I'm here to help with your plant care questions! However, the Groq API key is not configured.\n\n"
+            error_msg += "**To fix this:**\n"
+            error_msg += "1. Go to Streamlit Cloud → Settings → Secrets\n"
+            error_msg += "2. Add: `GROQ_API_KEY = \"your_key_here\"`\n"
+            error_msg += "3. Click Save and wait for redeploy\n\n"
+            error_msg += f"**Debug info:** {', '.join(debug_info)}"
+            
+            return error_msg
         
         try:
             system_prompt = f"""You are an expert botanist and plant care advisor. You help users with their gardening questions in a friendly, knowledgeable way.

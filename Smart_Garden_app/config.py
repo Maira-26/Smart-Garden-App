@@ -190,8 +190,36 @@ def get_openweather_key():
     return os.getenv("OPENWEATHER_API_KEY", "")
 
 def get_groq_key():
-    """Get Groq API key from environment"""
-    return os.getenv("GROQ_API_KEY", "")
+    """Get Groq API key from environment or secrets"""
+    # First check environment (set by load_api_keys)
+    key = os.getenv("GROQ_API_KEY", "")
+    if key:
+        return key
+    
+    # Fallback: Try to get directly from Streamlit secrets (in case load_api_keys wasn't called)
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets') and st.secrets:
+            # Try direct format
+            if "GROQ_API_KEY" in st.secrets:
+                key = st.secrets["GROQ_API_KEY"]
+                if key:
+                    os.environ["GROQ_API_KEY"] = str(key).strip()
+                    return str(key).strip()
+            
+            # Try nested format
+            if "api" in st.secrets:
+                api_secrets = st.secrets["api"]
+                for key_name in ["groq_key", "GROQ_KEY", "groq_api_key", "GROQ_API_KEY"]:
+                    if key_name in api_secrets:
+                        key = api_secrets[key_name]
+                        if key:
+                            os.environ["GROQ_API_KEY"] = str(key).strip()
+                            return str(key).strip()
+    except Exception as e:
+        print(f"⚠️ Error checking Streamlit secrets for Groq key: {e}")
+    
+    return ""
 
 def get_gemini_key():
     """Get Gemini API key from environment"""
