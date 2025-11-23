@@ -6,6 +6,7 @@ import streamlit as st
 import os
 from datetime import datetime, timedelta
 from PIL import Image
+import config
 import io
 import tempfile
 
@@ -40,7 +41,15 @@ st.set_page_config(
 
 # Load API keys from secrets or environment variables
 # This must be called after Streamlit is initialized
-load_api_keys()
+config.load_api_keys()
+
+# DEBUG: Check if secrets are loaded
+st.sidebar.write("🔍 **Debug Info:**")
+st.sidebar.write(f"OpenWeather Key: {'✅ Loaded' if config.OPENWEATHER_API_KEY else '❌ Missing'}")
+st.sidebar.write(f"Groq Key: {'✅ Loaded' if config.GROQ_API_KEY else '❌ Missing'}")
+st.sidebar.write(f"Gemini Key: {'✅ Loaded' if config.GEMINI_API_KEY else '❌ Missing'}")
+st.sidebar.write(f"Default Location: {config.DEFAULT_LOCATION}")
+st.sidebar.write(f"First 5 chars of Groq: {config.GROQ_API_KEY[:5] if config.GROQ_API_KEY else 'None'}")
 
 # Custom CSS for beautiful green-themed UI with animations
 st.markdown("""
