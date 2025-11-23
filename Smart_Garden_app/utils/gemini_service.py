@@ -11,7 +11,7 @@ from datetime import datetime
 class GeminiService:
     def __init__(self):
         # Access API key dynamically from config module (supports secrets.toml)
-        self.api_key = config.GEMINI_API_KEY
+        self.api_key = config.get_gemini_key()
         if self.api_key:
             try:
                 # Configure API - ensure it's from AI Studio (not Vertex AI)

@@ -11,7 +11,7 @@ import config
 class WeatherService:
     def __init__(self):
         # Access API key dynamically from config module (supports secrets.toml)
-        self.api_key = config.OPENWEATHER_API_KEY
+        self.api_key = config.get_openweather_key()
         self.base_url = config.OPENWEATHER_BASE_URL
         
     def get_current_weather(self, city=None, country_code="PK"):

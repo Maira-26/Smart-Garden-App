@@ -9,7 +9,7 @@ import config
 class GroqService:
     def __init__(self):
         # Access API key dynamically from config module (supports secrets.toml)
-        self.api_key = config.GROQ_API_KEY
+        self.api_key = config.get_groq_key()
         if self.api_key:
             try:
                 self.client = Groq(api_key=self.api_key)
